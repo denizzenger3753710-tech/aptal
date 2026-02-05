@@ -5,16 +5,16 @@
 <title>Aptal AI Bot</title>
 <style>
 body { font-family: Arial, sans-serif; background:#f0f0f0; padding:20px; }
-h1 { color:#333; margin-bottom:10px; }
+h1 { color:#333; margin-bottom:5px; }
 #ust { font-weight:bold; margin-bottom:20px; }
-button, select, input { padding:5px; margin:5px 0; }
+button, select, input { padding:5px; margin:5px 0; width:100%; max-width:400px; }
 #cevap { margin-top:20px; font-weight:bold; white-space:pre-wrap; }
 .container { max-width:600px; margin:auto; background:white; padding:20px; border-radius:10px; box-shadow:0 0 10px rgba(0,0,0,0.1);}
 </style>
 </head>
 <body>
 <div class="container">
-  <div id="ust">DENİZ Z tarafından yapıldı</div>
+  <div id="ust">DENİZ Z TARAFINDAN YAPILDI</div>
   <h1>Aptal AI Bot</h1>
 
   <label for="mod">Mod Seç:</label>
@@ -35,45 +35,24 @@ button, select, input { padding:5px; margin:5px 0; }
 <script>
 // ======= BEYİN =======
 const kelimeDagarcigi = {
-  mutlu: Array.from({length:250},(_,i)=>`mutluKelime${i+1}`),
-  sinirli: Array.from({length:250},(_,i)=>`sinirliKelime${i+1}`),
-  uzgun: Array.from({length:250},(_,i)=>`uzgunKelime${i+1}`)
+  mutlu: Array.from({length:1000},(_,i)=>`mutluKelime${i+1}`),
+  sinirli: Array.from({length:1000},(_,i)=>`sinirliKelime${i+1}`),
+  uzgun: Array.from({length:1000},(_,i)=>`uzgunKelime${i+1}`)
 };
-
-const matCevaplar = Array.from({length:100},(_,i)=>`MatCevap${i+1}`);
-const siirHikaye = Array.from({length:100},(_,i)=>`SiirHikaye${i+1}`);
 
 const beyin = {
   mutlu: new Set(),
   sinirli: new Set(),
   uzgun: new Set(),
-  mat: new Set(),
-  siir: new Set(),
   girilen: new Set()
 };
 
 // ======= FONKSİYONLAR =======
 function kelimeSec(mod){
-  let available = kelimeDagarcigi[mod].filter(k=>!beyin[mod].has(k));
+  let available = kelimeDagarcigi[mod].filter(k => !beyin[mod].has(k));
   if(available.length===0) return "(tüm kelimeler kullanıldı)";
   const secilen = available[Math.floor(Math.random()*available.length)];
   beyin[mod].add(secilen);
-  return secilen;
-}
-
-function matCevapSec(){
-  let available = matCevaplar.filter(c=>!beyin.mat.has(c));
-  if(available.length===0) return "(tüm mat cevaplar kullanıldı)";
-  const secilen = available[Math.floor(Math.random()*available.length)];
-  beyin.mat.add(secilen);
-  return secilen;
-}
-
-function siirHikayeSec(){
-  let available = siirHikaye.filter(c=>!beyin.siir.has(c));
-  if(available.length===0) return "(tüm siir/hikaye kullanıldı)";
-  const secilen = available[Math.floor(Math.random()*available.length)];
-  beyin.siir.add(secilen);
   return secilen;
 }
 
@@ -94,14 +73,6 @@ function cevapUret(m,mod="mutlu"){
 
   if(beyin.girilen.has(m)) return "Bu kelimeyi zaten kullandın!";
   beyin.girilen.add(m);
-
-  if(/\d|kaç|topla|çıkar|böl|çarp/.test(m)){
-    return "Matematik: " + matCevapSec();
-  }
-
-  if(m.includes("şiir") || m.includes("hikaye")){
-    return siirHikayeSec();
-  }
 
   switch(mod){
     case "mutlu": return "Mutlu: "+cevapOlustur("mutlu");
