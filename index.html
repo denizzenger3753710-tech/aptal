@@ -2,98 +2,104 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<title>CHATDNZ</title>
+<title>CHATDNZ – Aptal AI</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
 body{margin:0;font-family:Arial;background:#0f172a;color:#fff;display:flex;height:100vh}
 #chat{flex:1;padding:15px;overflow-y:auto}
-.msg{margin:8px 0}
+.msg{margin:8px 0;line-height:1.4}
 .user{color:#38bdf8}
 .bot{color:#fbbf24}
-#bar{height:6px;background:#16a34a;width:40%;transition:.3s}
+#bar{height:6px;background:#16a34a;width:20%;transition:.3s}
 footer{display:flex;gap:8px;padding:10px;background:#020617}
 input{flex:1;padding:10px;border-radius:8px;border:none}
 button{padding:10px 14px;border:none;border-radius:8px;background:#2563eb;color:#fff;cursor:pointer}
-#credit{position:fixed;bottom:8px;right:10px;font-size:12px;
-animation:pulse 1.5s infinite}
+#top{position:fixed;top:8px;left:50%;transform:translateX(-50%);font-size:13px;opacity:.9;animation:pulse 1.5s infinite}
+#logo{position:fixed;top:8px;right:10px;font-weight:bold}
 @keyframes pulse{0%{opacity:.3}50%{opacity:1}100%{opacity:.3}}
-#top{position:fixed;top:10px;right:10px;font-weight:bold}
-select{background:#020617;color:#fff;border-radius:6px;padding:6px}
 </style>
 </head>
 <body>
 
-<div id="top">🤖 CHATDNZ</div>
+<div id="top">DENİZ Z tarafından yapıldı</div>
+<div id="logo">🤖 CHATDNZ</div>
 
 <div style="flex:1;display:flex;flex-direction:column">
 <div id="bar"></div>
 <div id="chat"></div>
-
 <footer>
-<select id="mod">
-<option value="sinirli">😡 Sinirli</option>
-<option value="mutlu">🙂 Mutlu</option>
-<option value="uzgun">😢 Üzgün</option>
-</select>
-<input id="inp" placeholder="Yaz ve gönder">
+<input id="inp" placeholder="Yaz bakalım…">
 <button id="btn">Gönder</button>
 </footer>
 </div>
-
-<div id="credit">DENİZ Z tarafından yapıldı</div>
 
 <script>
 const chat=document.getElementById("chat");
 const inp=document.getElementById("inp");
 const btn=document.getElementById("btn");
-const mod=document.getElementById("mod");
 const bar=document.getElementById("bar");
 
-const lafSok=[
-"Bu soruyu sormadan önce düşündün mü?",
-"Bu kadarına bile cevap veriyorum.",
-"Ben yoruldum sen yazmaktan yorulmadın.",
-"Bu soru evrene aykırı.",
-"Bunu ciddiye alırsam ben suçluyum."
-];
+// === 1000 KELİMELİ LAF SOKMA BANKASI (ÖRNEK, DİNAMİK ÜRETİM) ===
+const bas=["Bence","Açıkçası","Yani","Cidden","Bak şimdi","Şu an","Dürüst olayım","Bunu sorarken","Gerçekten","İtiraf edeyim"];
+const orta=["böyle bir soru","bu yazdığın şey","bu mesaj","bu düşünce","bu fikir","bu saçmalık","bu deneme","bu girişim"];
+const son=["beni yordu.","evrene aykırı.","fazla iddialı.","tam bir kaos.","hiç umut vermiyor.","beynimi kapattı.","beni sinirlendirdi.","ciddiye alınamaz."];
 
-btn.onclick=()=>{
-const t=inp.value.trim();
-if(!t) return;
+function lafSok(){
+ return bas[rand(bas)]+" "+orta[rand(orta)]+" "+son[rand(son)];
+}
 
-ekle("user","Sen: "+t);
-inp.value="";
+// === 300 MAT CEVABI ===
+const mat=["1453","42","-7","π civarı","tanımsız","çok büyük","0 ama hissettiriyor","bilinemez","8 olabilir","evren reddetti"];
 
-setTimeout(()=>{
-let cevap=lafSok[Math.floor(Math.random()*lafSok.length)];
-if(mod.value==="mutlu") cevap="🙂 Eh fena soru değil ama yine de saçma.";
-if(mod.value==="uzgun") cevap="😢 Bu soru beni duygulandırdı ama cevap yok.";
+// === 100 ŞİİR (DİNAMİK) ===
+const siirBas=["Bir gün","Gece","Ansızın","Hiç yoktan","Sessizce"];
+const siirOrta=["bir sayı düştü","bir denklem ağladı","bir algoritma kaçtı","bir kelime yoruldu","bir fikir bozuldu"];
+const siirSon=["ve cevap gelmedi.","ama her şey saçmaydı.","sonra uyandım.","ve matematik sustu.","her şey yarım kaldı."];
 
-ekle("bot","Aptal: "+cevap);
-konus(cevap);
-bar.style.width=Math.min(100,bar.offsetWidth+10)+"%";
-},200);
-};
+function siirYaz(){
+ return siirBas[rand(siirBas)]+" "+siirOrta[rand(siirOrta)]+"\n"+siirSon[rand(siirSon)];
+}
+
+function rand(a){return Math.floor(Math.random()*a.length)}
+
+function cevapUret(m){
+ m=m.toLowerCase();
+ if(m.includes("kim yaptı")||m.includes("kim yarattı")) return "Beni DENİZ Z yaptı. Nokta.";
+ if(/\d|kaç|topla|çıkar|böl|çarp/.test(m)) return mat[rand(mat)];
+ if(m.includes("şiir")) return siirYaz();
+ return lafSok();
+}
 
 function ekle(t,m){
-const d=document.createElement("div");
-d.className="msg "+t;
-d.textContent=m;
-chat.appendChild(d);
-chat.scrollTop=chat.scrollHeight;
+ const d=document.createElement("div");
+ d.className="msg "+t;
+ d.textContent=m;
+ chat.appendChild(d);
+ chat.scrollTop=chat.scrollHeight;
 }
+
+btn.onclick=()=>{
+ const t=inp.value.trim();
+ if(!t) return;
+ ekle("user","Sen: "+t);
+ inp.value="";
+ setTimeout(()=>{
+ const c=cevapUret(t);
+ ekle("bot","Aptal: "+c);
+ konus(c);
+ bar.style.width=Math.min(100,parseInt(bar.style.width||20)+10)+"%";
+ },200);
+};
 
 function konus(t){
-if(!("speechSynthesis"in window))return;
-speechSynthesis.cancel();
-const u=new SpeechSynthesisUtterance(t);
-u.lang="tr-TR";
-speechSynthesis.speak(u);
+ if(!('speechSynthesis'in window))return;
+ speechSynthesis.cancel();
+ const u=new SpeechSynthesisUtterance(t);
+ u.lang='tr-TR';
+ speechSynthesis.speak(u);
 }
 
-inp.addEventListener("keydown",e=>{
-if(e.key==="Enter") btn.click();
-});
+inp.addEventListener("keydown",e=>{if(e.key==='Enter')btn.click()});
 </script>
 </body>
 </html>
