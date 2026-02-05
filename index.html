@@ -1,64 +1,60 @@
-// 3 mod ve her biri için kelime dağarcığı (örnek olarak kısa, sen 250 kelime ekle)
-const kelimeDagarcigi = {
-  uzgun: ["mutsuz","yalnız","hüzün","sıkıntı","keder"], // ... 245 kelime ekle
-  sinirli: ["öfke","kızgın","sinirli","hırçın","tahammülsüz"], // ... 245 kelime ekle
-  mutlu: ["neşe","keyif","şenlik","sevinç","güzel"] // ... 245 kelime ekle
+// Modlara özel kelimeler / cümleler (örnek, 250 kelime ekleyebilirsin)
+const cevaplar = {
+  mutlu: [
+    "Eh fena soru değil ama yine de saçma.",
+    "Harika, bunu düşündüğün için teşekkürler!",
+    "Bu çok güzel bir fikir, devam et!"
+    // ... 247 cümle daha ekle
+  ],
+  sinirli: [
+    "Hala cevap veriyorum, beğenmiyorsan kendin yap!",
+    "Cidden mi? Bu kadar basit mi sandın?",
+    "Off ya, yine mi böyle saçma bir soru!"
+    // ... 247 cümle daha ekle
+  ],
+  uzgun: [
+    "😢 Bu soru beni duygulandırdı ama cevap yok.",
+    "Ah, üzgünüm, buna yardımcı olamam.",
+    "Hüzünlendim, ama bir cevap yok."
+    // ... 247 cümle daha ekle
+  ]
 };
 
-// Kullanılan kelimeleri takip et (tekrar etmemek için)
-const kullanilanKelimeler = {
-  uzgun: new Set(),
+// Kullanılan cümleleri takip et
+const kullanilanCevaplar = {
+  mutlu: new Set(),
   sinirli: new Set(),
-  mutlu: new Set()
+  uzgun: new Set()
 };
 
-// Tek bir kelime seç, tekrar etmemek için kontrol et
-function kelimeSec(mod) {
-  let available = kelimeDagarcigi[mod].filter(k => !kullanilanKelimeler[mod].has(k));
+// Tekrar etmeyen cevap seç
+function cevapSec(mod) {
+  if (!cevaplar[mod]) mod = "mutlu"; // geçersiz modda mutlu kullan
+  let available = cevaplar[mod].filter(c => !kullanilanCevaplar[mod].has(c));
   if (available.length === 0) {
-    // Eğer kelime biterse seti sıfırla
-    kullanilanKelimeler[mod].clear();
-    available = [...kelimeDagarcigi[mod]];
+    kullanilanCevaplar[mod].clear();
+    available = [...cevaplar[mod]];
   }
   const secilen = available[Math.floor(Math.random() * available.length)];
-  kullanilanKelimeler[mod].add(secilen);
+  kullanilanCevaplar[mod].add(secilen);
   return secilen;
 }
 
-// Belirli uzunlukta cevap üret
-function cevapOlustur(mod, uzunluk = 20) {
-  const kelimeler = [];
-  for(let i = 0; i < uzunluk; i++) {
-    kelimeler.push(kelimeSec(mod));
+// Menü ve cevap fonksiyonu
+function cevapUret(mod) {
+  switch(mod){
+    case "mutlu":
+      return "Mutlu: " + cevapSec("mutlu");
+    case "sinirli":
+      return "Sinirli: " + cevapSec("sinirli");
+    case "uzgun":
+      return "Üzgün: " + cevapSec("uzgun");
+    default:
+      return "Mod seçmedin, işte mutlu cevap: " + cevapSec("mutlu");
   }
-  return kelimeler.join(" ");
-}
-
-// Senin eski cevapUret fonksiyonunu mod ekleyerek genişletelim
-function cevapUret(m, mod="mutlu") {
-  m = m.toLowerCase();
-
-  if(m.includes("kim yaptı") || m.includes("kim yarattı")){
-    return "Beni DENİZ Z yaptı. Nokta.";
-  }
-
-  if(m.includes("su iç") || m.includes("su ic")){
-    return "Tamam, su içtim.";
-  }
-
-  if(/\d|kaç|topla|çıkar|böl|çarp/.test(m)){
-    return "Matematik cevabı: " + Math.floor(Math.random()*100); // basit örnek
-  }
-
-  if(m.includes("şiir")){
-    return "Şiir: " + cevapOlustur(mod, 15); // 15 kelimelik kısa şiir gibi
-  }
-
-  // Genel cevap moddan bağımsız laf sokma yerine modlu kelime üret
-  return cevapOlustur(mod, 20); // 20 kelimelik cevap
 }
 
 // Örnek kullanım
-console.log("Üzgün mod:", cevapUret("bir şiir yaz", "uzgun"));
-console.log("Sinirli mod:", cevapUret("nasılsın", "sinirli"));
-console.log("Mutlu mod:", cevapUret("selam", "mutlu"));
+console.log(cevapUret("mutlu"));
+console.log(cevapUret("sinirli"));
+console.log(cevapUret("uzgun"));
