@@ -1,60 +1,123 @@
-// Modlara özel kelimeler / cümleler (örnek, 250 kelime ekleyebilirsin)
-const cevaplar = {
-  mutlu: [
-    "Eh fena soru değil ama yine de saçma.",
-    "Harika, bunu düşündüğün için teşekkürler!",
-    "Bu çok güzel bir fikir, devam et!"
-    // ... 247 cümle daha ekle
-  ],
-  sinirli: [
-    "Hala cevap veriyorum, beğenmiyorsan kendin yap!",
-    "Cidden mi? Bu kadar basit mi sandın?",
-    "Off ya, yine mi böyle saçma bir soru!"
-    // ... 247 cümle daha ekle
-  ],
-  uzgun: [
-    "😢 Bu soru beni duygulandırdı ama cevap yok.",
-    "Ah, üzgünüm, buna yardımcı olamam.",
-    "Hüzünlendim, ama bir cevap yok."
-    // ... 247 cümle daha ekle
-  ]
+// ==============================
+// APTAL AI BOT – BEYİN HAFIZALI
+// ==============================
+
+// 1. Modlar ve 250 kelime (örnek olarak kısaltılmış, sen 250 ekle)
+const kelimeDagarcigi = {
+  mutlu: Array.from({length:250}, (_,i)=>`mutluKelime${i+1}`),
+  sinirli: Array.from({length:250}, (_,i)=>`sinirliKelime${i+1}`),
+  uzgun: Array.from({length:250}, (_,i)=>`uzgunKelime${i+1}`)
 };
 
-// Kullanılan cümleleri takip et
-const kullanilanCevaplar = {
-  mutlu: new Set(),
-  sinirli: new Set(),
-  uzgun: new Set()
-};
+// 2. Matematik cevapları
+const matCevaplar = Array.from({length:100}, (_,i)=>`MatCevap${i+1}`);
 
-// Tekrar etmeyen cevap seç
-function cevapSec(mod) {
-  if (!cevaplar[mod]) mod = "mutlu"; // geçersiz modda mutlu kullan
-  let available = cevaplar[mod].filter(c => !kullanilanCevaplar[mod].has(c));
-  if (available.length === 0) {
-    kullanilanCevaplar[mod].clear();
-    available = [...cevaplar[mod]];
+// 3. Şiir/Hikaye
+const siirHikaye = Array.from({length:100}, (_,i)=>`SiirHikaye${i+1}`);
+
+// 4. Kullanıcı beyni (hafıza) – kullanıcıId -> {mod: Set(kelimeler)}
+const kullaniciBeyni = {};
+
+// ==============================
+// FONKSİYONLAR
+// ==============================
+
+// Kullanıcının beyni yoksa oluştur
+function beyiniOlustur(kullaniciId){
+  if(!kullaniciBeyni[kullaniciId]){
+    kullaniciBeyni[kullaniciId] = {
+      mutlu: new Set(),
+      sinirli: new Set(),
+      uzgun: new Set(),
+      mat: new Set(),
+      siir: new Set()
+    };
   }
-  const secilen = available[Math.floor(Math.random() * available.length)];
-  kullanilanCevaplar[mod].add(secilen);
+}
+
+// Tekrar etmeyen kelime seçimi
+function kelimeSec(mod, kullaniciId){
+  beyiniOlustur(kullaniciId);
+  let available = kelimeDagarcigi[mod].filter(k => !kullaniciBeyni[kullaniciId][mod].has(k));
+  if(available.length === 0){
+    // Tüm kelimeler kullanıldı, tekrar etmeye izin verilmeyecek
+    return "(tüm kelimeler kullanıldı)";
+  }
+  const secilen = available[Math.floor(Math.random()*available.length)];
+  kullaniciBeyni[kullaniciId][mod].add(secilen);
   return secilen;
 }
 
-// Menü ve cevap fonksiyonu
-function cevapUret(mod) {
+// Matematik cevabı
+function matCevapSec(kullaniciId){
+  beyiniOlustur(kullaniciId);
+  let available = matCevaplar.filter(c => !kullaniciBeyni[kullaniciId].mat.has(c));
+  if(available.length === 0) return "(tüm mat cevaplar kullanıldı)";
+  const secilen = available[Math.floor(Math.random()*available.length)];
+  kullaniciBeyni[kullaniciId].mat.add(secilen);
+  return secilen;
+}
+
+// Şiir/hikaye cevabı
+function siirHikayeSec(kullaniciId){
+  beyiniOlustur(kullaniciId);
+  let available = siirHikaye.filter(c => !kullaniciBeyni[kullaniciId].siir.has(c));
+  if(available.length === 0) return "(tüm siir/hikaye kullanıldı)";
+  const secilen = available[Math.floor(Math.random()*available.length)];
+  kullaniciBeyni[kullaniciId].siir.add(secilen);
+  return secilen;
+}
+
+// Modlu cevap oluşturma (20 kelimelik)
+function cevapOlustur(mod, kullaniciId, uzunluk=20){
+  const kelimeler = [];
+  for(let i=0;i<uzunluk;i++){
+    const k = kelimeSec(mod,kullaniciId);
+    if(k === "(tüm kelimeler kullanıldı)") break;
+    kelimeler.push(k);
+  }
+  if(mod==="sinirli") kelimeler.push("hala cevap veriyorum!");
+  return kelimeler.join(" ");
+}
+
+// ==============================
+// ANA CEVAP ÜRET FONKSİYONU
+// ==============================
+function cevapUret(m, kullaniciId, mod="mutlu"){
+  m = m.toLowerCase();
+  
+  // Matematik sorusu
+  if(/\d|kaç|topla|çıkar|böl|çarp/.test(m)){
+    return "Matematik: " + matCevapSec(kullaniciId);
+  }
+
+  // Şiir veya hikaye
+  if(m.includes("şiir") || m.includes("hikaye")){
+    return siirHikayeSec(kullaniciId);
+  }
+
+  // Genel mod cevabı
   switch(mod){
     case "mutlu":
-      return "Mutlu: " + cevapSec("mutlu");
+      return "Mutlu: " + cevapOlustur("mutlu",kullaniciId);
     case "sinirli":
-      return "Sinirli: " + cevapSec("sinirli");
+      return "Sinirli: " + cevapOlustur("sinirli",kullaniciId);
     case "uzgun":
-      return "Üzgün: " + cevapSec("uzgun");
+      return "Üzgün: " + cevapOlustur("uzgun",kullaniciId);
     default:
-      return "Mod seçmedin, işte mutlu cevap: " + cevapSec("mutlu");
+      return "Mutlu (default): " + cevapOlustur("mutlu",kullaniciId);
   }
 }
 
-// Örnek kullanım
-console.log(cevapUret("mutlu"));
-console.log(cevapUret("sinirli"));
-console.log(cevapUret("uzgun"));
+// ==============================
+// ÖRNEK KULLANIM
+// ==============================
+const userId1 = "deniz";
+const userId2 = "ali";
+
+console.log(cevapUret("merhaba", userId1, "mutlu"));
+console.log(cevapUret("merhaba", userId1, "sinirli"));
+console.log(cevapUret("topla 5 ve 7", userId1));
+console.log(cevapUret("bana bir şiir yaz", userId1));
+console.log(cevapUret("merhaba", userId2, "uzgun"));
+console.log(cevapUret("topla 2 ve 3", userId2));
