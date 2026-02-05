@@ -63,61 +63,140 @@ function siirHikayeSec(kullaniciId){
   beyiniOlustur(kullaniciId);
   let available = siirHikaye.filter(c => !kullaniciBeyni[kullaniciId].siir.has(c));
   if(available.length === 0) return "(tüm siir/hikaye kullanıldı)";
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>Aptal AI Bot</title>
+<style>
+  body { font-family: Arial, sans-serif; padding: 20px; background: #f0f0f0; }
+  h1 { color: #333; }
+  select, input, button { margin: 5px 0; padding: 5px; }
+  #cevap { margin-top: 20px; font-weight: bold; }
+</style>
+</head>
+<body>
+
+<h1>Aptal AI Bot</h1>
+
+<label for="kullanici">Kullanıcı Adı:</label>
+<input type="text" id="kullanici" placeholder="Örn: Deniz"><br>
+
+<label for="mod">Mod Seç:</label>
+<select id="mod">
+  <option value="mutlu">Mutlu</option>
+  <option value="sinirli">Sinirli</option>
+  <option value="uzgun">Üzgün</option>
+</select><br>
+
+<label for="mesaj">Kelimeni Gir:</label>
+<input type="text" id="mesaj" placeholder="Tek kelime"><br>
+
+<button onclick="gonder()">Gönder</button>
+
+<div id="cevap"></div>
+
+<script>
+// ======= BEYİN / HAFIZA =======
+const kelimeDagarcigi = {
+  mutlu: Array.from({length:250},(_,i)=>`mutluKelime${i+1}`),
+  sinirli: Array.from({length:250},(_,i)=>`sinirliKelime${i+1}`),
+  uzgun: Array.from({length:250},(_,i)=>`uzgunKelime${i+1}`)
+};
+
+const matCevaplar = Array.from({length:100},(_,i)=>`MatCevap${i+1}`);
+const siirHikaye = Array.from({length:100},(_,i)=>`SiirHikaye${i+1}`);
+
+const kullaniciBeyni = {}; // kullanıcıId -> {mod:Set(), mat:Set(), siir:Set(), girilen:Set()}
+
+// ======= FONKSİYONLAR =======
+function beyiniOlustur(kullaniciId){
+  if(!kullaniciBeyni[kullaniciId]){
+    kullaniciBeyni[kullaniciId] = {
+      mutlu:new Set(),
+      sinirli:new Set(),
+      uzgun:new Set(),
+      mat:new Set(),
+      siir:new Set(),
+      girilen:new Set()
+    };
+  }
+}
+
+function kelimeSec(mod,kullaniciId){
+  beyiniOlustur(kullaniciId);
+  let available = kelimeDagarcigi[mod].filter(k=>!kullaniciBeyni[kullaniciId][mod].has(k));
+  if(available.length===0) return "(tüm kelimeler kullanıldı)";
+  const secilen = available[Math.floor(Math.random()*available.length)];
+  kullaniciBeyni[kullaniciId][mod].add(secilen);
+  return secilen;
+}
+
+function matCevapSec(kullaniciId){
+  beyiniOlustur(kullaniciId);
+  let available = matCevaplar.filter(c=>!kullaniciBeyni[kullaniciId].mat.has(c));
+  if(available.length===0) return "(tüm mat cevaplar kullanıldı)";
+  const secilen = available[Math.floor(Math.random()*available.length)];
+  kullaniciBeyni[kullaniciId].mat.add(secilen);
+  return secilen;
+}
+
+function siirHikayeSec(kullaniciId){
+  beyiniOlustur(kullaniciId);
+  let available = siirHikaye.filter(c=>!kullaniciBeyni[kullaniciId].siir.has(c));
+  if(available.length===0) return "(tüm siir/hikaye kullanıldı)";
   const secilen = available[Math.floor(Math.random()*available.length)];
   kullaniciBeyni[kullaniciId].siir.add(secilen);
   return secilen;
 }
 
-// Modlu cevap oluşturma (20 kelimelik)
-function cevapOlustur(mod, kullaniciId, uzunluk=20){
-  const kelimeler = [];
+function cevapOlustur(mod,kullaniciId,uzunluk=20){
+  const kelimeler=[];
   for(let i=0;i<uzunluk;i++){
     const k = kelimeSec(mod,kullaniciId);
-    if(k === "(tüm kelimeler kullanıldı)") break;
+    if(k==="(tüm kelimeler kullanıldı)") break;
     kelimeler.push(k);
   }
   if(mod==="sinirli") kelimeler.push("hala cevap veriyorum!");
   return kelimeler.join(" ");
 }
 
-// ==============================
-// ANA CEVAP ÜRET FONKSİYONU
-// ==============================
-function cevapUret(m, kullaniciId, mod="mutlu"){
+// ======= ANA FONKSİYON =======
+function cevapUret(m,kullaniciId,mod="mutlu"){
+  beyiniOlustur(kullaniciId);
+
+  // Tek kelime kontrolü
+  if(kullaniciBeyni[kullaniciId].girilen.has(m)) return "Bu kelimeyi zaten kullandın!";
+  kullaniciBeyni[kullaniciId].girilen.add(m);
+
   m = m.toLowerCase();
-  
-  // Matematik sorusu
+
   if(/\d|kaç|topla|çıkar|böl|çarp/.test(m)){
-    return "Matematik: " + matCevapSec(kullaniciId);
+    return matCevapSec(kullaniciId);
   }
 
-  // Şiir veya hikaye
   if(m.includes("şiir") || m.includes("hikaye")){
     return siirHikayeSec(kullaniciId);
   }
 
-  // Genel mod cevabı
   switch(mod){
-    case "mutlu":
-      return "Mutlu: " + cevapOlustur("mutlu",kullaniciId);
-    case "sinirli":
-      return "Sinirli: " + cevapOlustur("sinirli",kullaniciId);
-    case "uzgun":
-      return "Üzgün: " + cevapOlustur("uzgun",kullaniciId);
-    default:
-      return "Mutlu (default): " + cevapOlustur("mutlu",kullaniciId);
+    case "mutlu": return "Mutlu: "+cevapOlustur("mutlu",kullaniciId);
+    case "sinirli": return "Sinirli: "+cevapOlustur("sinirli",kullaniciId);
+    case "uzgun": return "Üzgün: "+cevapOlustur("uzgun",kullaniciId);
+    default: return "Mutlu (default): "+cevapOlustur("mutlu",kullaniciId);
   }
 }
 
-// ==============================
-// ÖRNEK KULLANIM
-// ==============================
-const userId1 = "deniz";
-const userId2 = "ali";
+// ======= BUTON =======
+function gonder(){
+  const kullanici = document.getElementById("kullanici").value.trim();
+  const mesaj = document.getElementById("mesaj").value.trim();
+  const mod = document.getElementById("mod").value;
+  if(!kullanici || !mesaj){ alert("Kullanıcı ve kelime gir!"); return; }
+  document.getElementById("cevap").innerText = cevapUret(mesaj,kullanici,mod);
+}
+</script>
 
-console.log(cevapUret("merhaba", userId1, "mutlu"));
-console.log(cevapUret("merhaba", userId1, "sinirli"));
-console.log(cevapUret("topla 5 ve 7", userId1));
-console.log(cevapUret("bana bir şiir yaz", userId1));
-console.log(cevapUret("merhaba", userId2, "uzgun"));
-console.log(cevapUret("topla 2 ve 3", userId2));
+</body>
+</html>
+
